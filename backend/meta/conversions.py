@@ -1,8 +1,10 @@
 """
-Meta Conversions API (CAPI) client — adaptado para tattoo-crm.
+Meta Conversions API (CAPI) client — Purchase events.
 
-Envía eventos Purchase a Meta Pixel con datos de clientes completados.
-Todo PII se hashea con SHA256 antes de salir del servidor.
+POST https://graph.facebook.com/v25.0/{PIXEL_ID}/events
+
+All PII is SHA256-hashed in array format before leaving the server.
+client_user_agent is passed through unhashed.
 """
 
 from __future__ import annotations
@@ -23,28 +25,24 @@ async def send_purchase_event(
     user_data: dict,
     value: float,
     event_id: str | None = None,
+    event_source_url: str = "",
+    client_user_agent: str = "",
+    test_event_code: str = "",
 ) -> dict:
-    """
-    Send a single Purchase event to the Meta Conversions API.
-
-    Args:
-        pixel_id: Meta Pixel ID
-        access_token: Meta API access token
-        user_data: dict with email, phone, first_name, last_name, city, state, zip, country
-        value: Purchase value in dollars (ej. 150.00)
-        event_id: Optional deduplication ID
-    """
     url = f"{META_API}/{pixel_id}/events"
 
-    hashed_user_data = hash_user_data(user_data)
+    hashed = hash_user_data(user_data)
 
-    payload = {
+    if client_user_agent:
+        hashed["client_user_agent"] = client_user_agent
+
+    payload: dict = {
         "data": [
             {
                 "event_name": "Purchase",
                 "event_time": int(datetime.now().timestamp()),
-                "action_source": "physical_store",
-                "user_data": hashed_user_data,
+                "action_source": "website",
+                "user_data": hashed,
                 "custom_data": {
                     "value": value,
                     "currency": "USD",
@@ -57,13 +55,19 @@ async def send_purchase_event(
     if event_id:
         payload["data"][0]["event_id"] = event_id
 
+    if event_source_url:
+        payload["data"][0]["event_source_url"] = event_source_url
+
+    if test_event_code:
+        payload["test_event_code"] = test_event_code
+
     async with httpx.AsyncClient(timeout=20.0) as client:
         response = await client.post(url, json=payload)
         data = response.json()
 
     if "error" in data:
         msg = data["error"].get("message", "Unknown error")
-        logger.warning(f"CAPI error: {msg}")
+        logger.warning("CAPI Purchase error: %s", msg)
         return {"success": False, "error": msg}
 
     return {

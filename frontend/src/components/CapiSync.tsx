@@ -39,9 +39,8 @@ export function CapiSync({ pendingCount, metaToken, setMetaToken }: Props) {
 
       <div className="bg-piedra-900 border border-piedra-700 rounded-xl p-6 space-y-4">
         <p className="text-sm text-piedra-300">
-          Los clientes con estado <strong>Completado</strong> y <strong>No enviado</strong> se enviarán a Meta
-          como eventos <code className="text-achiote bg-achiote-dim px-1 rounded">Purchase</code> a través
-          de la Conversions API.
+          Envía eventos pendientes de <strong>Lead</strong> y <strong>Purchase</strong> a Meta
+          a través de la Conversions API.
         </p>
 
         <div className="bg-piedra-800 border border-piedra-600 rounded-lg p-4">
@@ -61,7 +60,7 @@ export function CapiSync({ pendingCount, metaToken, setMetaToken }: Props) {
             className="bg-piedra-900 border border-piedra-600 rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-achiote font-mono"
           />
           <p className="text-xs text-piedra-400">
-            Este token se usará automáticamente al crear clientes y al marcarlos como completados.
+            Este token se usa automáticamente al crear clientes y al marcarlos como completados.
           </p>
         </div>
 
@@ -99,11 +98,20 @@ export function CapiSync({ pendingCount, metaToken, setMetaToken }: Props) {
           {result.results.length > 0 && (
             <div className="space-y-1 mt-3">
               {result.results.map((r) => (
-                <div key={r.client_id}
+                <div key={`${r.client_id}-${r.event_type}`}
                   className={`text-xs px-3 py-2 rounded-lg flex items-center justify-between ${
                     r.success ? "bg-green-900/20 text-green-400" : "bg-red-900/20 text-red-400"
                   }`}>
-                  <span>{r.client_name}</span>
+                  <span>
+                    {r.client_name}
+                    <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      r.event_type === "lead"
+                        ? "bg-maiz-dim text-maiz"
+                        : "bg-achiote-dim text-achiote"
+                    }`}>
+                      {r.event_type === "lead" ? "Lead" : "Purchase"}
+                    </span>
+                  </span>
                   <span>{r.success ? "Enviado" : r.error}</span>
                 </div>
               ))}

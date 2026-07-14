@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     supabase_anon_key: str = ""
     conversions_pixel_id: str = ""
     qualified_leads_dataset_id: str = ""
+    test_event_code: str = ""
 
     class Config:
         env_file = ".env"

@@ -15,16 +15,14 @@ export function ClientForm({ open, client, onClose, onSave }: Props) {
   const [last_name, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-  const [city, setCity] = useState("")
-  const [state, setState] = useState("")
-  const [zip, setZip] = useState("")
-  const [country, setCountry] = useState("US")
+  const [city, setCity] = useState("Quito")
+  const [state, setState] = useState("Pichincha")
+  const [country, setCountry] = useState("EC")
   const [tattoo_price, setTattooPrice] = useState("")
   const [material_cost, setMaterialCost] = useState("")
   const [appointment_date, setAppointmentDate] = useState("")
   const [status, setStatus] = useState<"adelanto_pagado" | "completado">("adelanto_pagado")
   const [tattoo_description, setTattooDescription] = useState("")
-  const [meta_lead_id, setMetaLeadId] = useState("")
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -33,21 +31,19 @@ export function ClientForm({ open, client, onClose, onSave }: Props) {
       setLastName(client.last_name)
       setEmail(client.email)
       setPhone(client.phone)
-      setCity(client.city)
-      setState(client.state)
-      setZip(client.zip)
-      setCountry(client.country)
+      setCity(client.city || "Quito")
+      setState(client.state || "Pichincha")
+      setCountry(client.country || "EC")
       setTattooPrice((client.tattoo_price / 100).toString())
       setMaterialCost((client.material_cost / 100).toString())
       setAppointmentDate(client.appointment_date || "")
       setStatus(client.status)
       setTattooDescription(client.tattoo_description || "")
-      setMetaLeadId(client.meta_lead_id || "")
     } else {
       setFirstName(""); setLastName(""); setEmail(""); setPhone("")
-      setCity(""); setState(""); setZip(""); setCountry("US")
+      setCity("Quito"); setState("Pichincha"); setCountry("EC")
       setTattooPrice(""); setMaterialCost(""); setAppointmentDate("")
-      setStatus("adelanto_pagado"); setTattooDescription(""); setMetaLeadId("")
+      setStatus("adelanto_pagado"); setTattooDescription("")
     }
   }, [client, open])
 
@@ -62,14 +58,12 @@ export function ClientForm({ open, client, onClose, onSave }: Props) {
       phone,
       city,
       state,
-      zip,
       country,
       tattoo_price: Math.round(parseFloat(tattoo_price || "0") * 100),
       material_cost: Math.round(parseFloat(material_cost || "0") * 100),
       appointment_date: appointment_date || null,
       status,
       tattoo_description,
-      meta_lead_id: meta_lead_id || null,
     }
     await onSave(data as Partial<Client>)
     setLoading(false)
@@ -97,9 +91,8 @@ export function ClientForm({ open, client, onClose, onSave }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Field label="Ciudad" val={city} set={setCity} />
             <Field label="Estado" val={state} set={setState} />
-            <Field label="Código postal" val={zip} set={setZip} />
+            <Field label="País (código)" val={country} set={setCountry} />
           </div>
-          <Field label="País (código)" val={country} set={setCountry} compact />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
@@ -150,14 +143,6 @@ export function ClientForm({ open, client, onClose, onSave }: Props) {
               Depósito: $10.00 (fijo)
             </div>
           )}
-
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-piedra-400">Meta Lead ID (opcional)</label>
-            <input type="text" value={meta_lead_id}
-              onChange={e => setMetaLeadId(e.target.value)}
-              placeholder="ID del lead de Meta (15-17 dígitos)"
-              className="bg-piedra-900 border border-piedra-600 rounded-lg px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-achiote font-mono" />
-          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Btn onClick={onClose} label="Cancelar" />

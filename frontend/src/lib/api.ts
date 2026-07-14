@@ -12,6 +12,7 @@ function headers(metaToken?: string): Record<string, string> {
   const token = getToken()
   if (token) h["Authorization"] = `Bearer ${token}`
   if (metaToken) h["X-Meta-Token"] = metaToken
+  h["X-Client-User-Agent"] = navigator.userAgent || "TattooCRM/2.0"
   return h
 }
 

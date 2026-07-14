@@ -1,6 +1,18 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ""
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+let _client: SupabaseClient | null = null
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+function getClient(): SupabaseClient {
+  if (_client) return _client
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    throw new Error(
+      "VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in Vercel Environment Variables. Redeploy after setting them."
+    )
+  }
+  _client = createClient(url, key)
+  return _client
+}
+
+export const supabase = getClient()

@@ -92,3 +92,7 @@ CREATE POLICY "Users can delete own clients"
 
 -- Migración 1: Agregar meta_lead_id (Qualified Leads CRM integration)
 -- ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS meta_lead_id TEXT;
+
+-- Migración 2: Agregar timestamps de sincronización CAPI
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS lead_synced_at TIMESTAMPTZ;
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS purchase_synced_at TIMESTAMPTZ;

@@ -10,16 +10,15 @@ class ClientCreate(BaseModel):
     last_name: str
     email: str = ""
     phone: str = ""
-    city: str = ""
-    state: str = ""
+    city: str = "Quito"
+    state: str = "Pichincha"
     zip: str = ""
-    country: str = "US"
+    country: str = "EC"
     tattoo_price: int = Field(ge=0, description="Precio del tatuaje en centavos")
     material_cost: int = Field(default=0, ge=0, description="Gasto en materiales en centavos")
     appointment_date: Optional[date] = None
     status: Literal["adelanto_pagado", "completado"] = "adelanto_pagado"
     tattoo_description: str = ""
-    meta_lead_id: Optional[str] = None
 
 
 class ClientUpdate(BaseModel):
@@ -37,7 +36,6 @@ class ClientUpdate(BaseModel):
     status: Optional[Literal["adelanto_pagado", "completado"]] = None
     capi_status: Optional[Literal["enviado", "no_enviado"]] = None
     tattoo_description: Optional[str] = None
-    meta_lead_id: Optional[str] = None
 
 
 class ClientResponse(BaseModel):
@@ -57,8 +55,9 @@ class ClientResponse(BaseModel):
     appointment_date: Optional[date] = None
     status: str
     capi_status: Optional[str] = None
+    lead_synced_at: Optional[datetime] = None
+    purchase_synced_at: Optional[datetime] = None
     tattoo_description: str
-    meta_lead_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     meta_event: Optional[dict[str, Any]] = None
@@ -95,6 +94,7 @@ class CapiSyncResult(BaseModel):
     client_id: str
     client_name: str
     success: bool
+    event_type: Literal["lead", "purchase"] = "purchase"
     error: str = ""
 
 

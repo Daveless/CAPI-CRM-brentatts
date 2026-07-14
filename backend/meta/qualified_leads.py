@@ -1,8 +1,11 @@
 """
 Meta Qualified Leads CRM Integration.
-Sends lead stage change events to Meta's Conversions API via a Dataset endpoint.
 
-Endpoint: POST https://graph.facebook.com/v25.0/{dataset_id}/events?access_token=TOKEN
+Sends lead stage change events to Meta's Conversions API endpoint:
+POST https://graph.facebook.com/v25.0/{DATASET_ID}/events
+
+All PII is SHA256-hashed in array format before leaving the server.
+client_user_agent is passed through unhashed.
 """
 
 from __future__ import annotations
@@ -25,33 +28,27 @@ async def send_lead_event(
     event_name: str,
     event_time: int | None = None,
     lead_id: str | None = None,
-    test_event_code: str | None = None,
+    event_id: str | None = None,
+    event_source_url: str = "",
+    client_user_agent: str = "",
+    test_event_code: str = "",
 ) -> dict:
-    """
-    Send a Qualified Lead stage change event to Meta.
-
-    Args:
-        dataset_id: Meta Dataset ID (e.g. "1047090114932525")
-        access_token: Meta API access token
-        user_data: dict with email, phone, first_name, last_name, city, state, zip, country
-        event_name: CRM stage name (e.g. "Lead", "Converted")
-        event_time: UNIX timestamp (defaults to now)
-        lead_id: Optional Meta-generated lead ID (15-17 digits)
-        test_event_code: Optional test event code for validation without affecting production
-    """
     url = f"{META_API}/{dataset_id}/events"
 
-    hashed_user_data = hash_user_data(user_data)
+    hashed = hash_user_data(user_data)
     if lead_id:
-        hashed_user_data["lead_id"] = lead_id
+        hashed["lead_id"] = lead_id
 
-    payload = {
+    if client_user_agent:
+        hashed["client_user_agent"] = client_user_agent
+
+    payload: dict = {
         "data": [
             {
                 "event_name": event_name,
                 "event_time": event_time or int(datetime.now().timestamp()),
-                "action_source": "system_generated",
-                "user_data": hashed_user_data,
+                "action_source": "website",
+                "user_data": hashed,
                 "custom_data": {
                     "event_source": "crm",
                     "lead_event_source": LEAD_EVENT_SOURCE,
@@ -60,6 +57,12 @@ async def send_lead_event(
         ],
         "access_token": access_token,
     }
+
+    if event_id:
+        payload["data"][0]["event_id"] = event_id
+
+    if event_source_url:
+        payload["data"][0]["event_source_url"] = event_source_url
 
     if test_event_code:
         payload["test_event_code"] = test_event_code
@@ -74,7 +77,7 @@ async def send_lead_event(
 
     if "error" in data:
         msg = data["error"].get("message", "Unknown error")
-        logger.warning(f"Qualified Leads error: {msg}")
+        logger.warning("Qualified Leads error: %s", msg)
         return {"success": False, "error": msg}
 
     return {

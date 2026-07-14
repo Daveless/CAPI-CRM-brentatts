@@ -15,8 +15,9 @@ export interface Client {
   appointment_date: string | null
   status: "adelanto_pagado" | "completado"
   capi_status: "enviado" | "no_enviado" | null
+  lead_synced_at: string | null
+  purchase_synced_at: string | null
   tattoo_description: string
-  meta_lead_id: string | null
   created_at: string
   updated_at: string
   meta_event?: {
@@ -24,6 +25,8 @@ export interface Client {
     success: boolean
     error?: string
     events_received?: number
+    lead?: { success: boolean; error?: string }
+    purchase?: { success: boolean; error?: string }
   }
 }
 
@@ -50,6 +53,7 @@ export interface CapiSyncResult {
   client_id: string
   client_name: string
   success: boolean
+  event_type: "lead" | "purchase"
   error: string
 }
 

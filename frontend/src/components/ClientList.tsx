@@ -18,14 +18,32 @@ const tabs: { key: ClientTab; label: string }[] = [
   { key: "pendientes_capi", label: "Pendientes CAPI" },
 ]
 
-const statusBadge = (s: string, cs: string | null) => {
-  if (s === "adelanto_pagado") return <span className="text-xs bg-maiz-dim text-maiz px-2 py-0.5 rounded-full font-medium">Adelanto</span>
-  if (s === "completado") {
-    if (cs === "enviado") return <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full font-medium">Enviado</span>
-    return <span className="text-xs bg-achiote-dim text-achiote px-2 py-0.5 rounded-full font-medium">No enviado</span>
+const syncBadge = (label: string, synced_at: string | null) => {
+  if (synced_at) {
+    return <span className="text-[10px] bg-green-900/30 text-green-400 px-1.5 py-0.5 rounded font-medium">{label} OK</span>
   }
-  return null
+  return <span className="text-[10px] bg-red-900/30 text-red-400 px-1.5 py-0.5 rounded font-medium">{label} pend</span>
 }
+
+const statusCell = (c: Client) => (
+  <div className="flex flex-col gap-1">
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {c.status === "adelanto_pagado" && (
+        <span className="text-xs bg-maiz-dim text-maiz px-2 py-0.5 rounded-full font-medium">Adelanto</span>
+      )}
+      {c.status === "completado" && c.capi_status === "enviado" && (
+        <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full font-medium">Enviado</span>
+      )}
+      {c.status === "completado" && c.capi_status !== "enviado" && (
+        <span className="text-xs bg-achiote-dim text-achiote px-2 py-0.5 rounded-full font-medium">No enviado</span>
+      )}
+    </div>
+    <div className="flex items-center gap-1 flex-wrap">
+      {syncBadge("Lead", c.lead_synced_at)}
+      {c.status === "completado" && syncBadge("Purchase", c.purchase_synced_at)}
+    </div>
+  </div>
+)
 
 const centsToDollars = (c: number) => `$${(c / 100).toFixed(2)}`
 
@@ -59,7 +77,7 @@ export function ClientList({ clients, tab, setTab, onEdit, onDelete, onNew }: Pr
               <th className="text-left px-4 py-3 font-medium">Contacto</th>
               <th className="text-left px-4 py-3 font-medium">Precio</th>
               <th className="text-left px-4 py-3 font-medium">Materiales</th>
-              <th className="text-left px-4 py-3 font-medium">Estado</th>
+              <th className="text-left px-4 py-3 font-medium">Estado / Sync</th>
               <th className="text-right px-4 py-3 font-medium">Acciones</th>
             </tr>
           </thead>
@@ -85,7 +103,7 @@ export function ClientList({ clients, tab, setTab, onEdit, onDelete, onNew }: Pr
                 </td>
                 <td className="px-4 py-3 text-stone-200 font-medium">{centsToDollars(c.tattoo_price)}</td>
                 <td className="px-4 py-3 text-stone-300">{centsToDollars(c.material_cost)}</td>
-                <td className="px-4 py-3">{statusBadge(c.status, c.capi_status)}</td>
+                <td className="px-4 py-3">{statusCell(c)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => onEdit(c)}

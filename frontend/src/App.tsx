@@ -16,22 +16,22 @@ export default function App() {
   const [email, setEmail] = useState("")
   const [view, setView] = useState<AppView>("dashboard")
 
-  // clients state
   const [clients, setClients] = useState<Client[]>([])
   const [tab, setTab] = useState<ClientTab>("todos")
   const [clientsLoading, setClientsLoading] = useState(false)
 
-  // form state
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [formOpen, setFormOpen] = useState(false)
 
-  // dashboard
   const [dashboard, setDashboard] = useState<DashboardStats | null>(null)
   const [dashLoading, setDashLoading] = useState(false)
 
-  // meta token & notifications
   const [metaToken, setMetaToken] = useState("")
-  const [capiNotif, setCapiNotif] = useState<{ type: "success" | "error"; msg: string } | null>(null)
+  const [capiNotifs, setCapiNotifs] = useState<{ type: "success" | "error"; msg: string }[]>([])
+
+  const dismissNotif = (index: number) => {
+    setCapiNotifs((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const loadClients = useCallback(async (status = "") => {
     setClientsLoading(true)
@@ -55,13 +55,17 @@ export default function App() {
     setDashLoading(false)
   }, [])
 
-  // handle tab change
   useEffect(() => {
     if (view !== "clientes") return
     if (tab === "pendientes_capi") {
       setClientsLoading(true)
-      fetchClients("completado").then((all) => {
-        const pending = (all as Client[]).filter((c) => c.capi_status === "no_enviado")
+      fetchClients("").then((all) => {
+        const arr = all as Client[]
+        const pending = arr.filter(
+          (c) =>
+            (c.status === "adelanto_pagado" && !c.lead_synced_at) ||
+            (c.status === "completado" && !c.purchase_synced_at)
+        )
         setClients(pending)
         setClientsLoading(false)
       }).catch(() => {
@@ -75,7 +79,6 @@ export default function App() {
     }
   }, [tab, view, loadClients])
 
-  // auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -102,15 +105,6 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // auto-dismiss capi notification
-  useEffect(() => {
-    if (capiNotif) {
-      const t = setTimeout(() => setCapiNotif(null), 5000)
-      return () => clearTimeout(t)
-    }
-  }, [capiNotif])
-
-  // load dashboard when entering dashboard view
   useEffect(() => {
     if (view === "dashboard" && session === true) loadDashboard()
   }, [view, session, loadDashboard])
@@ -125,6 +119,14 @@ export default function App() {
     setFormOpen(true)
   }
 
+  const addNotif = (type: "success" | "error", msg: string) => {
+    const id = Date.now()
+    setCapiNotifs((prev) => [...prev, { type, msg }])
+    setTimeout(() => {
+      setCapiNotifs((prev) => prev.filter((_, i) => prev.length - 1 !== i || prev[prev.length - 1] !== undefined))
+    }, 6000)
+  }
+
   const handleSave = async (data: Partial<Client>) => {
     try {
       let result: Client
@@ -134,12 +136,19 @@ export default function App() {
         result = await createClient(data, metaToken || undefined)
       }
       if (result.meta_event) {
-        setCapiNotif({
-          type: result.meta_event.success ? "success" : "error",
-          msg: result.meta_event.success
-            ? `Evento "${result.meta_event.type}" enviado a Meta`
-            : `Error Meta: ${result.meta_event.error || "desconocido"}`,
-        })
+        if (result.meta_event.type === "lead+purchase" && result.meta_event.lead && result.meta_event.purchase) {
+          addNotif(
+            result.meta_event.lead.success && result.meta_event.purchase.success ? "success" : "error",
+            `Lead: ${result.meta_event.lead.success ? "enviado" : "error"} | Purchase: ${result.meta_event.purchase.success ? "enviado" : "error"}`
+          )
+        } else {
+          addNotif(
+            result.meta_event.success ? "success" : "error",
+            result.meta_event.success
+              ? `Evento "${result.meta_event.type}" enviado a Meta`
+              : `Error Meta: ${result.meta_event.error || "desconocido"}`
+          )
+        }
       }
     } catch {
       return
@@ -172,9 +181,9 @@ export default function App() {
 
   return (
     <Layout view={view} setView={setView} email={email}>
-      {capiNotif && (
-        <MetaNotif type={capiNotif.type} msg={capiNotif.msg} onDismiss={() => setCapiNotif(null)} />
-      )}
+      {capiNotifs.map((n, i) => (
+        <MetaNotif key={i} type={n.type} msg={n.msg} onDismiss={() => dismissNotif(i)} />
+      ))}
       {view === "dashboard" && <Dashboard data={dashboard} loading={dashLoading} />}
       {view === "clientes" && (
         <ClientList
