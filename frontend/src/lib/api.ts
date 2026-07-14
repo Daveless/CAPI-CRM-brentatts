@@ -1,6 +1,6 @@
 import { supabase } from "./supabase"
 
-const BASE = "/api"
+const BASE = import.meta.env.VITE_API_BASE_URL || "/api"
 
 function getToken(): string {
   const stored = localStorage.getItem("sb-token")
