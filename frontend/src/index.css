@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-piedra-950: #100c09;
+  --color-piedra-900: #1a1410;
+  --color-piedra-800: #231c16;
+  --color-piedra-700: #2d251e;
+  --color-piedra-600: #3d342b;
+  --color-piedra-500: #5c5044;
+  --color-piedra-400: #8a7d70;
+  --color-piedra-300: #a89888;
+  --color-achiote: #FF5A36;
+  --color-achiote-hover: #e64a2a;
+  --color-achiote-dim: rgba(255, 90, 54, 0.12);
+  --color-maiz: #FFC043;
+  --color-maiz-dim: rgba(255, 192, 67, 0.12);
+  --font-heading: "Outfit", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --radius-card: 1rem;
+  --radius-input: 0.75rem;
+  --radius-btn: 0.75rem;
+}
+
+body {
+  background-color: var(--color-piedra-950);
+  color: #e8e3dc;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
