@@ -16,7 +16,7 @@ from meta.qualified_leads import send_lead_event
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("tattoo-crm")
 
-app = FastAPI(title="Tattoo CRM", version="2.0.0")
+app = FastAPI(title="Tattoo CRM", version="2.0.0", redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
