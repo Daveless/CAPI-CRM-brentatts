@@ -31,6 +31,8 @@ async def send_purchase_event(
 ) -> dict:
     url = f"{META_API}/{pixel_id}/events"
 
+    logger.info("CAPI Purchase: token len=%d prefix=%r pixel=%s", len(access_token), access_token[:20] if access_token else "EMPTY", pixel_id)
+
     hashed = hash_user_data(user_data)
 
     if client_user_agent:

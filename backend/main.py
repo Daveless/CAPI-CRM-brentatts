@@ -391,6 +391,15 @@ async def capi_sync(
     event_source_url = _get_event_source_url(request)
     client_user_agent = _get_client_user_agent(request)
 
+    token_preview = body.access_token[:30] if body.access_token else "EMPTY"
+    logger.info("CAPI sync token: len=%d prefix=%r full=%r", len(body.access_token), token_preview, body.access_token[:60])
+
+    try:
+        raw_body = await request.body()
+        logger.info("CAPI sync raw body: %r", raw_body.decode()[:200])
+    except Exception:
+        pass
+
     clients = supabase.table("clients").select("*").eq("user_id", user_id).execute()
     if not clients.data:
         return CapiSyncResponse(total=0, sent=0, failed=0, results=[])

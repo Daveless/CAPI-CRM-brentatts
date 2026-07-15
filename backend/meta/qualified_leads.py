@@ -35,6 +35,8 @@ async def send_lead_event(
 ) -> dict:
     url = f"{META_API}/{dataset_id}/events"
 
+    logger.info("CAPI Lead: token len=%d prefix=%r dataset=%s", len(access_token), access_token[:20] if access_token else "EMPTY", dataset_id)
+
     hashed = hash_user_data(user_data)
     if lead_id:
         hashed["lead_id"] = lead_id
