@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI, Depends, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import Response
 from typing import Optional
 from config import settings
 from auth import get_current_user
@@ -29,6 +30,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.options("/{full_path:path}")
+async def preflight_handler(full_path: str = ""):
+    resp = Response()
+    resp.headers["Access-Control-Allow-Origin"] = "https://capi-crm-brentatts.vercel.app"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS, POST, PUT, DELETE"
+    resp.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Meta-Token, X-Client-User-Agent"
+    return resp
+
 
 DEPOSIT_CENTS = 1000
 
