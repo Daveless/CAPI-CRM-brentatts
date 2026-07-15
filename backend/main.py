@@ -392,11 +392,11 @@ async def capi_sync(
     client_user_agent = _get_client_user_agent(request)
 
     token_preview = body.access_token[:30] if body.access_token else "EMPTY"
-    logger.info("CAPI sync token: len=%d prefix=%r full=%r", len(body.access_token), token_preview, body.access_token[:60])
+    logger.warning("CAPI sync token: len=%d prefix=%r full=%r", len(body.access_token), token_preview, body.access_token[:60])
 
     try:
         raw_body = await request.body()
-        logger.info("CAPI sync raw body: %r", raw_body.decode()[:200])
+        logger.warning("CAPI sync raw body: %r", raw_body.decode()[:200])
     except Exception:
         pass
 

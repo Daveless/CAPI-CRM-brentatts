@@ -94,5 +94,6 @@ export async function deleteClient(id: string): Promise<{ ok: boolean }> {
 }
 
 export async function syncCapi(accessToken: string): Promise<CapiSyncResponse> {
+  console.log("syncCapi: token len=%d prefix=%s", accessToken.length, accessToken.substring(0, 25))
   return apiPost("/capi/sync", { access_token: accessToken })
 }
