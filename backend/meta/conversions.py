@@ -46,7 +46,7 @@ async def send_purchase_event(
                 "action_source": "website",
                 "user_data": hashed,
                 "custom_data": {
-                    "value": value,
+                    "value": str(value),
                     "currency": "USD",
                 },
             }
