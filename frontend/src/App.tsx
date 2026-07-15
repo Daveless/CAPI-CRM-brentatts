@@ -169,6 +169,22 @@ export default function App() {
     if (view === "dashboard") loadDashboard()
   }
 
+  const handleSyncComplete = () => {
+    loadDashboard()
+    if (tab === "pendientes_capi") {
+      fetchClients("").then((all) => {
+        const arr = all as Client[]
+        setClients(
+          arr.filter(
+            (c) =>
+              (c.status === "adelanto_pagado" && !c.lead_synced_at) ||
+              (c.status === "completado" && !c.purchase_synced_at)
+          )
+        )
+      })
+    }
+  }
+
   if (session === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-piedra-950">
@@ -200,6 +216,7 @@ export default function App() {
           pendingCount={dashboard?.pending_capi ?? 0}
           metaToken={metaToken}
           setMetaToken={setMetaToken}
+          onSyncComplete={handleSyncComplete}
         />
       )}
 

@@ -55,7 +55,6 @@ async def send_lead_event(
                 },
             }
         ],
-        "access_token": access_token,
     }
 
     if event_id:

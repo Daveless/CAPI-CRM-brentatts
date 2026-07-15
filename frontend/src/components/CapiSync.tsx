@@ -7,9 +7,10 @@ type Props = {
   pendingCount: number
   metaToken: string
   setMetaToken: (token: string) => void
+  onSyncComplete: () => void
 }
 
-export function CapiSync({ pendingCount, metaToken, setMetaToken }: Props) {
+export function CapiSync({ pendingCount, metaToken, setMetaToken, onSyncComplete }: Props) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<CapiSyncResponse | null>(null)
   const [error, setError] = useState("")
@@ -25,6 +26,7 @@ export function CapiSync({ pendingCount, metaToken, setMetaToken }: Props) {
     try {
       const data = await syncCapi(metaToken.trim())
       setResult(data)
+      onSyncComplete()
     } catch {
       setError("Error al sincronizar con Meta CAPI")
     }

@@ -49,7 +49,6 @@ async def send_purchase_event(
                 },
             }
         ],
-        "access_token": access_token,
     }
 
     if event_id:
@@ -62,7 +61,11 @@ async def send_purchase_event(
         payload["test_event_code"] = test_event_code
 
     async with httpx.AsyncClient(timeout=20.0) as client:
-        response = await client.post(url, json=payload)
+        response = await client.post(
+            url,
+            params={"access_token": access_token},
+            json=payload,
+        )
         data = response.json()
 
     if "error" in data:
